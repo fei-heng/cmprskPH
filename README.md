@@ -1,4 +1,4 @@
-# Cause-specific proportional hazards model for compering risks analysis (cmprskPH)
+# Cause-specific proportional hazards model for competing risks analysis (cmprskPH)
 
 Authors: Fei Heng (f.heng@unf.edu), Yanqing Sun (yasun@uncc.edu), and Peter B. Gilbert 
 
@@ -11,7 +11,7 @@ on windows and [development tools](http://cran.r-project.org/bin/macosx/tools/) 
 devtools::install_github("fei-heng/cmprskPH")
 ```
 
-## Example Codes
+## Code Examples
 ### Example 1: for 2 causes
 ```{r eval=F}
 library(cmprskPH)
