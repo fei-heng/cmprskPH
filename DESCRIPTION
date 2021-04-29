@@ -8,6 +8,8 @@ Description: Programs for papers `Estimation and Hypothesis Testing of Strain-Sp
     Vaccine Efficacy Adjusted for Covariate Effects with Missing Causes', 
     Heng et al. (2020), `Analysis of the Time-Varying Cox Model for the Cause-Specific 
     Hazard Functions with Missing Causes'.
+Depends:
+    R (>= 3.5.0)
 Imports:
     MASS,
     nnet
