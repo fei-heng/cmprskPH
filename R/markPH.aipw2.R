@@ -22,10 +22,10 @@
 #' a subject; R = 1 if either \eqn{\delta=0} (right-censored) or if
 #' \eqn{\delta=1} (a failure is observed) and the cause is not missing;
 #' and R = 0 otherwise.
-#' Let VL denote the viral load.
+#' Let VL be the viral load and \eqn{h_0} the minimum threshold.
 #' Missing at random (MAR) assumption is valid using Approach 2:
-#' \eqn{P(R=1|\delta=1,T,Z,VL,V)=P(R=1|\delta=1,T,Z,VL)}
-#' \eqn{=I(VL<threshold)+P(R=1|\delta=1,T,Z,VL,VL>=threshold)I(VL>=threshold)}
+#' \eqn{P(R=1|\delta=1,T,Z,VL,h_0,V)=P(R=1|\delta=1,T,Z,VL,h_0)}
+#' \eqn{=I(VL<h_0)+P(R=1|\delta=1,T,Z,VL,VL \ge h_0)I(VL\ge h_0)}
 #'
 #' @param cmprskPHformula a formula object with the response on the left of a '~'
 #' operator, and the independent terms on the right as covariates in the
