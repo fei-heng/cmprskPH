@@ -1,6 +1,6 @@
 Package: cmprskPH
 Type: Package
-Title: Cause-specific proportional hazards model for compering risks analysis
+Title: Cause-specific proportional hazards model for competing risks analysis
 Version: 0.4.0
 Author: Fei Heng, Yanqing Sun, and Peter B. Gilbert
 Maintainer: Fei Heng <f.heng@unf.edu>
