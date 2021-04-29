@@ -1,4 +1,4 @@
-# Cause-specific proportional hazards model for compering risks analysis (cmprskPH)
+# Cause-specific proportional hazards model for competing risks analysis (cmprskPH)
 
 Authors: Fei Heng (f.heng@unf.edu), Yanqing Sun (yasun@uncc.edu), and Peter B. Gilbert 
 
