@@ -11,7 +11,7 @@ on windows and [development tools](http://cran.r-project.org/bin/macosx/tools/) 
 devtools::install_github("fei-heng/cmprskPH")
 ```
 
-## Example Codes
+## Code Examples
 ### Example 1: for 2 causes
 ```{r eval=F}
 library(cmprskPH)
