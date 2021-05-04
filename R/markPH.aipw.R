@@ -41,8 +41,8 @@
 #' \item{coef.ipw}{estimates of covariate coefficients using IPW method}
 #' \item{se.ipw}{estimates of standard errors of estimators for covariate coefficients
 #' using IPW method}
-#' \item{coef.aipw}{estimates of covariate coefficients using AIPW method}
-#' \item{se.aipw}{estimates of standard errors of estimators for covariate coefficients
+#' \item{coef}{estimates of covariate coefficients using AIPW method}
+#' \item{se}{estimates of standard errors of estimators for covariate coefficients
 #' using AIPW method}
 #' \item{coef.VE}{estimates of the strain-specific vaccine efficacy to reduce
 #' susceptibility to strain j using AIPW method, j=1,...,J}
@@ -388,8 +388,8 @@ markPH.aipw <- function(cmprskPHformula,
               se.cc=sstd_c,
               coef.ipw=sbeta_ic,
               se.ipw=sstd_ic,
-              coef.aipw=sbeta_acc,
-              se.aipw=sstd_acc,
+              coef=sbeta_acc,
+              se=sstd_acc,
               coef.VE=sVE_acc,
               se.VE=sVEstd_acc,
               coef.VD=sVD_acc,
@@ -421,24 +421,24 @@ markPH.aipw <- function(cmprskPHformula,
 ##' @export
 print.markPH.aipw <- function(x, digits=4,...){
 
-  ncs <- ncol(x$coef.aipw)
-  ncov <- nrow(x$coef.aipw)
+  ncs <- ncol(x$coef)
+  ncov <- nrow(x$coef)
 
   cat("Table 1: estimates of covaraite coefficients\n")
   for (ics in 1:ncs){
     cat("Cause:", x$causes[ics], "\n")
-    table1 <- cbind(x$coef.aipw[,ics],
-                    x$se.aipw[,ics],
-                    pnorm(-abs(x$coef.aipw[,ics]/x$se.aipw[,ics]))*2,
+    table1 <- cbind(x$coef[,ics],
+                    x$se[,ics],
+                    pnorm(-abs(x$coef[,ics]/x$se[,ics]))*2,
                     x$coef.ipw[,ics],
                     x$se.ipw[,ics],
                     pnorm(-abs(x$coef.ipw[,ics]/x$se.ipw[,ics]))*2,
                     x$coef.cc[,ics],
                     x$se.cc[,ics],
                     pnorm(-abs(x$coef.cc[,ics]/x$se.cc[,ics]))*2)
-    colnames(table1) <- c("coef.aipw",
-                          "se.aipw",
-                          "pval.aipw",
+    colnames(table1) <- c("coef",
+                          "se",
+                          "pval",
                           "coef.ipw",
                           "se.ipw",
                           "pval.ipw",
@@ -452,8 +452,8 @@ print.markPH.aipw <- function(x, digits=4,...){
 
   cat("Table 2: results for VE\n")
   table2 <- cbind(x$coef.VE,x$se.VE,
-                  1-(1-x$coef.VE)*exp(qnorm(0.975)*x$se.aipw[x$trtpos,]),
-                  1-(1-x$coef.VE)*exp(-qnorm(0.975)*x$se.aipw[x$trtpos,]),
+                  1-(1-x$coef.VE)*exp(qnorm(0.975)*x$se[x$trtpos,]),
+                  1-(1-x$coef.VE)*exp(-qnorm(0.975)*x$se[x$trtpos,]),
                   x$U1j,
                   x$pval.A1j,
                   x$U2j,

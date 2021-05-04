@@ -56,8 +56,8 @@ using a complete-case analysis}
 \item{coef.ipw}{estimates of covariate coefficients using IPW method}
 \item{se.ipw}{estimates of standard errors of estimators for covariate coefficients
 using IPW method}
-\item{coef.aipw}{estimates of covariate coefficients using AIPW method}
-\item{se.aipw}{estimates of standard errors of estimators for covariate coefficients
+\item{coef}{estimates of covariate coefficients using AIPW method}
+\item{se}{estimates of standard errors of estimators for covariate coefficients
 using AIPW method}
 \item{coef.VE}{estimates of the strain-specific vaccine efficacy to reduce
 susceptibility to strain j using AIPW method, j=1,...,J}

@@ -47,8 +47,8 @@ returns an object of type 'markPH.ipw'. With the following arguments:
 \item{coef.cc}{estimates of covariate coefficients using a complete-case analysis}
 \item{se.cc}{estimates of standard errors of estimators for covariate coefficients
 using a complete-case analysis}
-\item{coef.ipw}{estimates of covariate coefficients using IPW method}
-\item{se.ipw}{estimates of standard errors of estimators for covariate coefficients
+\item{coef}{estimates of covariate coefficients using IPW method}
+\item{se}{estimates of standard errors of estimators for covariate coefficients
 using IPW method}
 \item{coef.VE}{estimates of the strain-specific vaccine efficacy to reduce
 susceptibility to strain j using IPW method, j=1,...,J}
