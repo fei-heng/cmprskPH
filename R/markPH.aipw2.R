@@ -119,6 +119,44 @@
 #'
 #' @references (2021+)
 #'
+#' @examples
+#'
+#' ## Example 1: Simulated competing risks data with 2 causes subject to missingness
+#' data(sim2cs)
+#'
+#' threshold <- 0.5
+#' sim2cs$cause[(sim2cs$delta==1)&(sim2cs$A<threshold)] <- 3
+#'
+#' res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+#'                           trtpos=1,
+#'                           strata="strata",
+#'                           causelevels=c(1,2,3),
+#'                           missmodel=c(TRUE,TRUE,FALSE),
+#'                           missformula=~z1+A,
+#'                           markformula=~time+z1+A,
+#'                           data=sim2cs,
+#'                           VEnull=0.3,
+#'                           maxit=15)
+#' res.aipw2 # print the result
+#'
+#' ## Example 2: Simulated competing risks data with 3 causes subject to missingness
+#' data(sim3cs)
+#'
+#' threshold <- 0.5
+#' sim3cs$cause[(sim3cs$delta==1)&(sim3cs$A<threshold)] <- 4
+#'
+#' res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+#'                           trtpos=1,
+#'                           strata="strata",
+#'                           causelevels=c(1,2,3,4),
+#'                           missmodel=c(TRUE,TRUE,TRUE,FALSE),
+#'                           missformula=~z1+A,
+#'                           markformula=~time+z1+A,
+#'                           data=sim3cs,
+#'                           VEnull=0.3,
+#'                           maxit=15)
+#' res.aipw2 # print the result
+#'
 #' @import MASS nnet
 #'
 #' @export

@@ -12,5 +12,5 @@ import(MASS)
 import(nnet)
 
 importFrom("stats", "formula", "glm", "model.frame", "model.matrix",
-               "model.response", "na.pass", "predict", "qnorm", "pnorm")
+               "model.response", "na.pass", "pnorm", "predict", "qnorm")
 importFrom("utils", "head", "tail")
