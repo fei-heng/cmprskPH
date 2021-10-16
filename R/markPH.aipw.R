@@ -59,7 +59,7 @@
 #' \item{U2j}{test statistic for testing against the alternative hypothesis
 #' HAj2: VE(j) is not equal to VEnull}
 #' \item{T1}{test statistic for testing against the alternative hypothesis
-#' HB1: VE(1)>=...>=VE(J) with strict inequality for some 1<=j<=J}
+#' HB1: VE(1)>=...>=VE(J) with at least one strict inequality}
 #' \item{T2}{test statistic for testing against the alternative hypothesis
 #' HB2: VE(i) is not equal to VE(j) for at least one pair of i and j, 1<=i<j<=J}
 #' \item{pval.A1}{p value for testing against the alternative hypothesis
@@ -71,7 +71,7 @@
 #' \item{pval.A2j}{p value for testing against the alternative hypothesis
 #' HAj2: VE(j) is not equal to VEnull}
 #' \item{pval.B1}{p value for testing against the alternative hypothesis
-#' HB1: VE(1)>=...>=VE(J) with strict inequality for some 1<=j<=J}
+#' HB1: VE(1)>=...>=VE(J) with at least one strict inequality}
 #' \item{pval.B2}{p value for testing against the alternative hypothesis
 #' HB2: VE(i) is not equal to VE(j) for at least one pair of i and j, 1<=i<j<=J}
 #' \item{tgrid}{specifies the time grids for estimating \eqn{\lambda_{0kj}(\cdot)}
@@ -522,7 +522,7 @@ print.markPH.aipw <- function(x, digits=4,...){
   cat("U1=",x$U1,"p-value=", x$pval.A1, "\n")
   cat("HA2: VE(j) not equal to", x$VEnull, "for some j\n")
   cat("U2=",x$U2,"p-value=", x$pval.A2, "\n")
-  cat("HB1: VE(1)>=...>=VE(J) with strict inequality for some 1<=j<=J\n")
+  cat("HB1: VE(1)>=...>=VE(J) with at least one strict inequality\n")
   cat("T1=",x$T1,"p-value=", x$pval.B1, "\n")
   cat("HB2: VE(i) not equal to VE(j) for at least one pair of i and j, 1<=i<j<=J\n")
   cat("T2=",x$T2,"p-value=", x$pval.B2, "\n")

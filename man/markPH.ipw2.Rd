@@ -81,7 +81,7 @@ HAj1: VE(j)>VEnull}
 \item{U2j}{test statistic for testing against the alternative hypothesis
 HAj2: VE(j) is not equal to VEnull}
 \item{T1}{test statistic for testing against the alternative hypothesis
-HB1: VE(\code{misscauses}[1]) \eqn{\ge \dots \ge} VE(\code{misscauses}[I]) with strict inequality for some cause in \code{misscauses}}
+HB1: VE(\code{misscauses}[1]) \eqn{\ge \dots \ge} VE(\code{misscauses}[I]) with at least one strict inequality}
 \item{T2}{test statistic for testing against the alternative hypothesis
 HB2: VE(i) is not equal to VE(j) for at least one pair of i and j in \code{misscauses}}
 \item{pval.A1}{p value for testing against the alternative hypothesis
@@ -93,7 +93,7 @@ HAj1: VE(j)>VEnull}
 \item{pval.A2j}{p value for testing against the alternative hypothesis
 HAj2: VE(j) is not equal to VEnull}
 \item{pval.B1}{p value for testing against the alternative hypothesis
-HB1: VE(\code{misscauses}[1]) \eqn{\ge \dots \ge} VE(\code{misscauses}[I]) with strict inequality for some cause in \code{misscauses}}
+HB1: VE(\code{misscauses}[1]) \eqn{\ge \dots \ge} VE(\code{misscauses}[I]) with at least one strict inequality}
 \item{pval.B2}{p value for testing against the alternative hypothesis
 HB2: VE(i) is not equal to VE(j) for at least one pair of i and j in \code{misscauses}}
 \item{tgrid}{specifies the time grids for estimating \eqn{\lambda_{0kj}(\cdot)}

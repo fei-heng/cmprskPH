@@ -4,10 +4,10 @@ Title: Cause-specific proportional hazards model for competing risks analysis
 Version: 0.4.0
 Author: Fei Heng, Yanqing Sun, and Peter B. Gilbert
 Maintainer: Fei Heng <f.heng@unf.edu>
-Description: Programs for papers `Estimation and Hypothesis Testing of Strain-Specific 
-    Vaccine Efficacy Adjusted for Covariate Effects with Missing Causes', 
-    Heng et al. (2020), `Analysis of the Time-Varying Cox Model for the Cause-Specific 
-    Hazard Functions with Missing Causes'.
+Description: Programs for papers ``Estimation and Hypothesis Testing of Strain-Specific 
+    Vaccine Efficacy Adjusted for Covariate Effects with Missing Causes", 
+    Heng et al. (2020), ``Analysis of the Time-Varying Cox Model for the Cause-Specific 
+    Hazard Functions with Missing Causes".
 Depends:
     R (>= 3.5.0)
 Imports:
