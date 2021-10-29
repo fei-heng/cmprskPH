@@ -94,7 +94,7 @@ res.ipw
 ## Approach 2
 data(sim3cs)
 threshold <- 0.5
-simdata$cause[(simdata$delta==1)&(simdata$A<threshold)] <- 4
+sim3cs$cause[(sim3cs$delta==1)&(sim3cs$A<threshold)] <- 4
 
 res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                    trtpos=1,
@@ -103,7 +103,7 @@ res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                    missmodel=c(T,T,T,F),
                    missformula=~z1+A,
                    markformula=~time+z1+A,
-                   data=simdata,
+                   data=sim3cs,
                    VEnull=0.3,
                    maxit=15)
 res.aipw2
@@ -114,7 +114,7 @@ res.ipw2 <- markPH.ipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                    causelevels=c(1,2,3,4),
                    missmodel=c(T,T,T,F),
                    missformula=~z1+A,
-                   data=simdata,
+                   data=sim3cs,
                    VEnull=0.3,
                    maxit=15)
 res.ipw2
