@@ -92,6 +92,7 @@ res.ipw <- markPH.ipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 res.ipw
 
 ## Approach 2
+data(sim3cs)
 threshold <- 0.5
 simdata$cause[(simdata$delta==1)&(simdata$A<threshold)] <- 4
 
