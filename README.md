@@ -15,9 +15,9 @@ devtools::install_github("fei-heng/cmprskPH")
 ### Example 1: for 2 causes
 ```{r eval=F}
 library(cmprskPH)
-data(sim2cs)
 
 ## Approach 1
+data(sim2cs)
 res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
             trtpos=1,
             strata="strata",
@@ -38,6 +38,7 @@ res.ipw <- markPH.ipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 res.ipw # print the result
 
 ## Approach 2
+data(sim2cs)
 threshold <- 0.5
 sim2cs$cause[(sim2cs$delta==1)&(sim2cs$A<threshold)] <- 3
 
@@ -62,14 +63,14 @@ res.ipw2 <- markPH.ipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                    data=sim2cs,
                    VEnull=0.3,
                    maxit=15)
-Sys.time() - start_time
-# running time: 3.6 seconds
 res.ipw2
 ```
 
 ### Example 2: for 3 causes
 ```{r eval=F}
 library(cmprskPH)
+
+## Approach 1
 data(sim3cs)
 res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 				    trtpos=1,
@@ -79,7 +80,7 @@ res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 				    data=sim3cs,
 				    VEnull=0.3,
 				    maxit=15)
-res.aipw # print the result
+res.aipw
 
 res.ipw <- markPH.ipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 				   trtpos=1,
@@ -88,5 +89,32 @@ res.ipw <- markPH.ipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 				   data=sim3cs,
 				   VEnull=0.3,
 				   maxit=15)
-res.ipw # print the result
+res.ipw
+
+## Approach 2
+threshold <- 0.5
+simdata$cause[(simdata$delta==1)&(simdata$A<threshold)] <- 4
+
+res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+                   trtpos=1,
+                   strata="strata",
+                   causelevels=c(1,2,3,4),
+                   missmodel=c(T,T,T,F),
+                   missformula=~z1+A,
+                   markformula=~time+z1+A,
+                   data=simdata,
+                   VEnull=0.3,
+                   maxit=15)
+res.aipw2
+
+res.ipw2 <- markPH.ipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+                   trtpos=1,
+                   strata="strata",
+                   causelevels=c(1,2,3,4),
+                   missmodel=c(T,T,T,F),
+                   missformula=~z1+A,
+                   data=simdata,
+                   VEnull=0.3,
+                   maxit=15)
+res.ipw2
 ```
