@@ -16,6 +16,8 @@ devtools::install_github("fei-heng/cmprskPH")
 ```{r eval=F}
 library(cmprskPH)
 data(sim2cs)
+
+## Approach 1
 res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
             trtpos=1,
             strata="strata",
@@ -34,6 +36,35 @@ res.ipw <- markPH.ipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 				   VEnull=0.3,
 				   maxit=15)
 res.ipw # print the result
+
+## Approach 2
+threshold <- 0.5
+sim2cs$cause[(sim2cs$delta==1)&(sim2cs$A<threshold)] <- 3
+
+res.aipw2 <- markPH.aipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+            trtpos=1,
+            strata="strata",
+            causelevels=c(1,2,3),
+            missmodel=c(T,T,F),
+            missformula=~z1+A,
+            markformula=~time+z1+A,
+            data=sim2cs,
+            VEnull=0.3,
+            maxit=15)
+res.aipw2
+
+res.ipw2 <- markPH.ipw2(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
+                   trtpos=1,
+                   strata="strata",
+                   causelevels=c(1,2,3),
+                   missmodel=c(T,T,F),
+                   missformula=~z1+A,
+                   data=sim2cs,
+                   VEnull=0.3,
+                   maxit=15)
+Sys.time() - start_time
+# running time: 3.6 seconds
+res.ipw2
 ```
 
 ### Example 2: for 3 causes
