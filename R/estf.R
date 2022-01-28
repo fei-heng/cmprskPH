@@ -3,7 +3,7 @@ estf <- function(time,covar,deltacs,beta,strata.num,maxit,subset=NULL){
 
   if (!is.null(subset)){
     time <- time[subset]
-    covar <- covar[subset,]
+    covar <- covar[subset,,drop=F]
     deltacs <- deltacs[subset]
     strata.num <- strata.num[subset]
   }

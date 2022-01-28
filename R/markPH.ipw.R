@@ -136,7 +136,7 @@ markPH.ipw <- function(cmprskPHformula,
   cause[is.na(cause.fa)] <- NA
 
 
-  covar2 <- model.matrix(a, data=a, na.action = na.pass)[,-1]
+  covar2 <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
   #A <- data[,Aux]
   strata.fa <- factor(data[,strata])
   strata.num <- as.numeric(strata.fa)
