@@ -164,6 +164,7 @@ markPH.ipw <- function(cmprskPHformula,
   wipw <- R
   a <- model.frame(missformula, data=data, na.action = na.pass)
   covar.miss <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
+  colnames(covar.miss) <- colnames(a)[-1]
 
   npsi <- ncol(covar.miss)+1
   dr <- matrix(0,nsamp,npsi)
@@ -173,7 +174,9 @@ markPH.ipw <- function(cmprskPHformula,
 
     temp <- which((delta==1)&(strata.num==jj))
     miss.res <- glm(missformula, data=data, family='binomial',subset=temp)
-    rhat <- predict(miss.res, as.data.frame(covar.miss[temp,]), type="response")
+    newdata <- as.data.frame(covar.miss[temp,])
+    colnames(newdata) <- colnames(a)[-1]
+    rhat <- predict(miss.res, newdata, type="response")
 
     Rjj <- R[temp]
     njj <- length(Rjj)

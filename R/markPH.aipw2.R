@@ -229,6 +229,7 @@ markPH.aipw2 <- function(cmprskPHformula,
   wipw <- R
   a <- model.frame(missformula, data=data, na.action = na.pass)
   covar.miss <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
+  colnames(covar.miss) <- colnames(a)[-1]
 
   npsi <- ncol(covar.miss)+1
   dr <- matrix(0,nsamp,npsi)
@@ -238,7 +239,9 @@ markPH.aipw2 <- function(cmprskPHformula,
 
     temp <- which((delta==1)&(strata.num==jj)&!(cause.fa %in% causelevels[!missmodel]))
     miss.res <- glm(missformula, data=data, family='binomial',subset=temp)
-    rhat <- predict(miss.res, as.data.frame(covar.miss[temp,]), type="response")
+    newdata <- as.data.frame(covar.miss[temp,])
+    colnames(newdata) <- colnames(a)[-1]
+    rhat <- predict(miss.res, newdata, type="response")
 
     Rjj <- R[temp]
     njj <- length(Rjj)
@@ -276,7 +279,9 @@ markPH.aipw2 <- function(cmprskPHformula,
       # other options: mlogit() from package mlogit
       mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
       # test for ncs>2!!!
-      rhohat[temp2,max(seq(1,3)[missmodel])] <- predict(mark.res, as.data.frame(covar.mark[temp2,]), type="probs")
+      newdata <- as.data.frame(covar.mark[temp2,])
+      colnames(newdata) <- colnames(a)[-1]
+      rhohat[temp2,max(seq(1,3)[missmodel])] <- predict(mark.res, newdata, type="probs")
     }
     rhohat[delta==1,min(seq(1,3)[missmodel])] <- 1-rhohat[delta==1,max(seq(1,3)[missmodel])]
   } else {
@@ -288,7 +293,9 @@ markPH.aipw2 <- function(cmprskPHformula,
       # other options: mlogit() from package mlogit
       mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
       # test for ncs>2!!!
-      rhohat[temp2,-seq(1,ncs)[!missmodel]] <- predict(mark.res, as.data.frame(covar.mark[temp2,]), type="probs")
+      newdata <- as.data.frame(covar.mark[temp2,])
+      colnames(newdata) <- colnames(a)[-1]
+      rhohat[temp2,-seq(1,ncs)[!missmodel]] <- predict(mark.res, newdata, type="probs")
     }
   }
 
