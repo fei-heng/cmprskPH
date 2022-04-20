@@ -176,7 +176,7 @@ markPH.aipw <- function(cmprskPHformula,
   wipw <- R
   a <- model.frame(missformula, data=data, na.action = na.pass)
   covar.miss <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
-  # colnames(covar.miss) <- colnames(a)[-1]
+  colnames(covar.miss) <- colnames(a)[-1]
 
   npsi <- ncol(covar.miss)+1
   dr <- matrix(0,nsamp,npsi)
