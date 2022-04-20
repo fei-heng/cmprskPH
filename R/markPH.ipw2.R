@@ -215,7 +215,7 @@ markPH.ipw2 <- function(cmprskPHformula,
   # logistic regression
   wipw <- R
   a <- model.frame(missformula, data=data, na.action = na.pass)
-  covar.miss <- model.matrix(a, data=a, na.action = na.pass)[,-1]
+  covar.miss <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
 
   npsi <- ncol(covar.miss)+1
   dr <- matrix(0,nsamp,npsi)

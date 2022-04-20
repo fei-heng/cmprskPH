@@ -175,7 +175,7 @@ markPH.aipw <- function(cmprskPHformula,
   # logistic regression
   wipw <- R
   a <- model.frame(missformula, data=data, na.action = na.pass)
-  covar.miss <- model.matrix(a, data=a, na.action = na.pass)[,-1]
+  covar.miss <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
 
   npsi <- ncol(covar.miss)+1
   dr <- matrix(0,nsamp,npsi)
@@ -209,7 +209,7 @@ markPH.aipw <- function(cmprskPHformula,
   # multinomial logistic regression
   # library(nnet)
   a <- model.frame(markformula, data=data, na.action = na.pass)
-  covar.mark <- model.matrix(a, data=a, na.action = na.pass)[,-1]
+  covar.mark <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
 
   rhohat <- matrix(0,nsamp,ncs)
   if (ncs==2){
