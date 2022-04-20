@@ -223,7 +223,9 @@ markPH.aipw <- function(cmprskPHformula,
       # other options: mlogit() from package mlogit
       mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
       # test for ncs>2!!!
-      rhohat[(delta==1)&(strata.num==jj),2] <- predict(mark.res, as.data.frame(covar.mark[(delta==1)&(strata.num==jj),]), type="probs")
+      newdata <- as.data.frame(covar.mark[(delta==1)&(strata.num==jj),])
+      colnames(newdata) <- colnames(a)[-1]
+      rhohat[(delta==1)&(strata.num==jj),2] <- predict(mark.res, newdata, type="probs")
     }
     rhohat[delta==1,1] <- 1-rhohat[delta==1,2]
   } else {
@@ -234,7 +236,9 @@ markPH.aipw <- function(cmprskPHformula,
       # other options: mlogit() from package mlogit
       mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
       # test for ncs>2!!!
-      rhohat[(delta==1)&(strata.num==jj),] <- predict(mark.res, as.data.frame(covar.mark[(delta==1)&(strata.num==jj),]), type="probs")
+      newdata <- as.data.frame(covar.mark[(delta==1)&(strata.num==jj),])
+      colnames(newdata) <- colnames(a)[-1]
+      rhohat[(delta==1)&(strata.num==jj),] <- predict(mark.res, newdata, type="probs")
     }
   }
 
