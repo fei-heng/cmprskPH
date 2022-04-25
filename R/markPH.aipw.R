@@ -32,6 +32,8 @@
 #' is 0.3.
 #' @param maxit Maximum number of iterations to attempt for convergence. The
 #' default is 15.
+#' @param ipw Whether to conduct the IPW estimation. The default value is TRUE.
+#' @param cc Whether to conduct the complete-case estimation. The default value is TRUE.
 #'
 #' @return returns an object of type 'markPH.aipw'. With the following arguments:
 #' \item{causes}{the types of causes of failure}
@@ -131,7 +133,9 @@ markPH.aipw <- function(cmprskPHformula,
                         markformula,
                         data=parent.frame(),
                         VEnull=0.3,
-                        maxit=15){
+                        maxit=15,
+                        ipw=T,
+                        cc=T){
   # next version:
   # ...
 
@@ -215,6 +219,7 @@ markPH.aipw <- function(cmprskPHformula,
   covar.mark <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
 
   rhohat <- matrix(0,nsamp,ncs)
+  colnames(rhohat) <- levels(cause.fa)
   if (ncs==2){
     for (jj in 1:nstrt){
       temp <- (delta==1)&(strata.num==jj)&R
@@ -238,27 +243,27 @@ markPH.aipw <- function(cmprskPHformula,
       # test for ncs>2!!!
       newdata <- as.data.frame(covar.mark[(delta==1)&(strata.num==jj),])
       colnames(newdata) <- colnames(a)[-1]
-      rhohat[(delta==1)&(strata.num==jj),] <- predict(mark.res, newdata, type="probs")
+      rhohat[(delta==1)&(strata.num==jj), mark.res$lab] <- predict(mark.res, newdata, type="probs")
     }
   }
 
 
   ## estimation for each cause
   # initialization
-  sbeta_c <- matrix(0, ncov, ncs)
-  sstd_c <- matrix(0, ncov, ncs)
+  sbeta_c <- matrix(NA, ncov, ncs)
+  sstd_c <- matrix(NA, ncov, ncs)
 
-  sbeta_ic <- matrix(0, ncov, ncs)
-  sstd_ic <- matrix(0, ncov, ncs)
+  sbeta_ic <- matrix(NA, ncov, ncs)
+  sstd_ic <- matrix(NA, ncov, ncs)
 
-  sbeta_acc <- matrix(0, ncov, ncs)
-  sstd_acc <- matrix(0, ncov, ncs)
+  sbeta_acc <- matrix(NA, ncov, ncs)
+  sstd_acc <- matrix(NA, ncov, ncs)
 
 
-  sVE_acc <- rep(0,ncs)
-  sVEstd_acc <- rep(0,ncs)
-  sVD_acc <- rep(0,ncs-1)
-  sVDstd_acc <- rep(0,ncs-1)
+  sVE_acc <- rep(NA,ncs)
+  sVEstd_acc <- rep(NA,ncs)
+  sVD_acc <- rep(NA,ncs-1)
+  sVDstd_acc <- rep(NA,ncs-1)
 
 
   for (ics in 1:ncs){
@@ -267,24 +272,29 @@ markPH.aipw <- function(cmprskPHformula,
     deltacs[is.na(cause)] <- F
 
     # complete estimation
-    beta0 <- rep(0,ncov)
-    res.cc <- estf(time,covar2,deltacs,beta0,strata.num,maxit,subset=R)
+    if (cc==T){
+      beta0 <- rep(0,ncov)
+      res.cc <- estf(time,covar2,deltacs,beta0,strata.num,maxit,subset=R)
+      # complete result
+      sbeta_c[,ics] <- res.cc$est
+      sstd_c[,ics] <- res.cc$se
+    }
+
 
     # ipw estimation
-    beta0 <- rep(0,ncov)
-    res.ipw <- esti(time,covar2,deltacs,beta0,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi)
+    if (ipw==T){
+      beta0 <- rep(0,ncov)
+      res.ipw <- esti(time,covar2,deltacs,beta0,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi)
+      # ipw-c result
+      sbeta_ic[,ics] <- res.ipw$est
+      sstd_ic[,ics] <- res.ipw$se
+    }
+
 
     # aipw estimation
     beta0 <- rep(0,ncov)
     res.aipw <- esta(time,covar2,deltacs,beta0,wipw,rhohat[,ics],delta,strata.num,maxit)
 
-
-    # complete result
-    sbeta_c[,ics] <- res.cc$est
-    sstd_c[,ics] <- res.cc$se
-    # ipw-c result
-    sbeta_ic[,ics] <- res.ipw$est
-    sstd_ic[,ics] <- res.ipw$se
     # aipw_cc result
     sbeta_acc[,ics] <- res.aipw$est
     sstd_acc[,ics] <- res.aipw$se
