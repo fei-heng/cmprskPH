@@ -47,12 +47,19 @@ estf <- function(time,covar,deltacs,beta,strata.num,maxit,subset=NULL){
     }
 
     # try()
-    change <- ginv(FF)%*%U
-    beta <- beta + change
-    error <- sum(abs(change))
-    betahat <- beta
-
-    iter <- iter + 1
+    error.flag <- FALSE
+    change <- tryCatch(ginv(FF)%*%U, error=function(e){
+      warning(e)
+      error.flag <- TRUE})
+    if(error.flag){
+      betahat <- rep(NA,ncov)
+      break
+    } else{
+      beta <- beta + change
+      error <- sum(abs(change))
+      betahat <- beta
+      iter <- iter + 1
+    }
   }
 
 
@@ -62,8 +69,15 @@ estf <- function(time,covar,deltacs,beta,strata.num,maxit,subset=NULL){
 
   if (sum(is.na(betahat)) == 0){
     # try()
-    varhat <- ginv(FF)
-    betasig <- sqrt(diag(varhat))
+    error.flag <- FALSE
+    varhat <- tryCatch(ginv(FF), error=function(e){
+      warning(e)
+      error.flag <- TRUE})
+    if(error.flag){
+      betasig <- rep(NA,ncov)
+    } else{
+      betasig <- sqrt(diag(varhat))
+    }
   } else {
     betasig <- rep(NA,ncov)
   }

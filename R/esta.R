@@ -42,13 +42,20 @@ esta <- function(time,covar,deltacs,beta,wipw,rhohat,delta,strata.num,maxit){
       }
     }
     #try()
-    change <- ginv(FF)%*%U
-    beta <- beta + change
-    error <- sum(abs(change))
-    betahat <- beta
+    error.flag <- FALSE
+    change <- tryCatch(ginv(FF)%*%U, error=function(e){
+      warning(e)
+      error.flag <- TRUE})
+    if(error.flag){
+      betahat <- rep(NA,ncov)
+      break
+    } else{
+      beta <- beta + change
+      error <- sum(abs(change))
+      betahat <- beta
+      iter <- iter + 1
+    }
     #print(betahat)
-
-    iter <- iter + 1
   }
 
   if (iter >= maxit){
@@ -109,8 +116,15 @@ esta <- function(time,covar,deltacs,beta,wipw,rhohat,delta,strata.num,maxit){
 
 
     # try()
-    varhat <- ginv(FF)%*%FU%*%ginv(FF)
-    betasig <- sqrt(diag(varhat))
+    error.flag <- FALSE
+    varhat <- tryCatch(ginv(FF)%*%FU%*%ginv(FF), error=function(e){
+      warning(e)
+      error.flag <- TRUE})
+    if(error.flag){
+      betasig <- rep(NA,ncov)
+    } else{
+      betasig <- sqrt(diag(varhat))
+    }
   } else {
     betasig <- rep(NA,ncov)
   }

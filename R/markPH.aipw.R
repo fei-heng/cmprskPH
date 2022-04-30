@@ -34,6 +34,7 @@
 #' default is 15.
 #' @param ipw Whether to conduct the IPW estimation. The default value is TRUE.
 #' @param cc Whether to conduct the complete-case estimation. The default value is TRUE.
+#' @param lambda0 Whether to estimate the cumulative baseline hazard. The default value is TRUE.
 #'
 #' @return returns an object of type 'markPH.aipw'. With the following arguments:
 #' \item{causes}{the types of causes of failure}
@@ -135,7 +136,8 @@ markPH.aipw <- function(cmprskPHformula,
                         VEnull=0.3,
                         maxit=15,
                         ipw=T,
-                        cc=T){
+                        cc=T,
+                        lambda0=T){
   # next version:
   # ...
 
@@ -305,62 +307,82 @@ markPH.aipw <- function(cmprskPHformula,
   # sLamtA0_c <- array(0, c(ngrid,nstrt,ncs))
   slamtA0_c <- array(0, c(ngrid,nstrt,ncs))
   # slamtA0_c_bd <- array(0, c(ngrid,nstrt,ncs)) boundary correction
-  for (ics in 1:ncs){
-    deltacs <- cause == ics# be carefule: NaN ->F
-    deltacs[is.na(cause)] <- F
+  if (lambda0==T){
+    for (ics in 1:ncs){
+      deltacs <- cause == ics# be carefule: NaN ->F
+      deltacs[is.na(cause)] <- F
 
 
-    ebz <- exp(covar2%*%sbeta_acc[,ics])
+      ebz <- exp(covar2%*%sbeta_acc[,ics])
 
-    Sf_acc <- rep(0, nsamp)
-    for (i in 1:nsamp){
-      if (delta[i]){
-        Sf_acc[i] <- sum(ebz*(time >= time[i])*(strata.num==strata.num[i]))
+      Sf_acc <- rep(0, nsamp)
+      for (i in 1:nsamp){
+        if (delta[i]){
+          Sf_acc[i] <- sum(ebz*(time >= time[i])*(strata.num==strata.num[i]))
+        }
       }
-    }
 
-    for (jj in 1:nstrt){
-      for (it in 1:ngrid){
-        tvalue <- tgrid[it]
-        wt <- (wipw*deltacs+(1-wipw)*rhohat[,ics])*delta
+      for (jj in 1:nstrt){
+        for (it in 1:ngrid){
+          tvalue <- tgrid[it]
+          wt <- (wipw*deltacs+(1-wipw)*rhohat[,ics])*delta
 
-        # temp=which((wt!=0)&(Sf_acc!=0)&(time<tvalue)&(strata.num==jj))
-        # sLamtA0_c[it,jj,ics]  <- sum(wt[temp]/Sf_acc[temp])
+          # temp=which((wt!=0)&(Sf_acc!=0)&(time<tvalue)&(strata.num==jj))
+          # sLamtA0_c[it,jj,ics]  <- sum(wt[temp]/Sf_acc[temp])
 
-        temp=which((wt!=0)&(Sf_acc!=0)&(strata.num==jj))
-        slamtA0_c[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])
+          temp=which((wt!=0)&(Sf_acc!=0)&(strata.num==jj))
+          slamtA0_c[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])
 
-        # ttstep <- 0.001
-        # ttgrid <- seq(time0,tau,by=ttstep)
-        # slamtA0_c_bd[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])/sum(epanker(tvalue, ttgrid, b)*ttstep)
+          # ttstep <- 0.001
+          # ttgrid <- seq(time0,tau,by=ttstep)
+          # slamtA0_c_bd[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])/sum(epanker(tvalue, ttgrid, b)*ttstep)
 
 
+        }
       }
     }
   }
 
 
+
+  ## hypothesis tests for causes with non-NA estimates
   icov <- trtpos# test the treatment effect (trtpos)
-  if (sum(is.na(sbeta_acc[icov,])) == 0){
-    ## hypothesis testing
+  U1 <- U2 <- T1 <- T2 <- pval.A1 <- pval.A2 <- pval.B1 <- pval.B2 <- NA
+  U1j <- U2j <- pval.A1j <- pval.A2j <- rep(NA, ncs)
+  diffsigma <- rep(NA, ncs)
 
-    alphanull <- rep(log(1-VEnull),ncs)
+  causes <- levels(cause.fa)
+  nonna <- !is.na(sbeta_acc[icov,])
+  causes.na <- causes[!nonna]
 
-    cov_acc <- cova(time,covar2,cause,sbeta_acc,wipw,rhohat,delta,strata.num,maxit)
+  id.test <- !(cause%in%causes.na)
+  time.test <- time[id.test]
+  covar2.test <- covar2[id.test,,drop=F]
+  cause.test <- cause[id.test]
+  sbeta_acc.test <- sbeta_acc[,nonna,drop=F]
+  wipw.test <- wipw[id.test]
+  rhohat.test <- rhohat[id.test,nonna]
+  delta.test <- delta[id.test]
+  strata.num.test <- strata.num[id.test]
 
-    alpha <- sbeta_acc[icov,]
-    cov_alpha <- matrix(0, ncs, ncs)
-    for (ics in 1:ncs){
-      for (jcs in 1:ncs){
+  ncs.test <- sum(nonna)
+    alphanull <- rep(log(1-VEnull),ncs.test)
+
+    cov_acc <- cova(time.test,covar2.test,cause.test,sbeta_acc.test,wipw.test,rhohat.test,delta.test,strata.num.test,maxit)
+
+    alpha <- sbeta_acc[icov,nonna]
+    cov_alpha <- matrix(NA, ncs.test, ncs.test)
+    for (ics in 1:ncs.test){
+      for (jcs in 1:ncs.test){
         cov_alpha[ics,jcs] <- cov_acc[(ics-1)*ncov+icov,(jcs-1)*ncov+icov]
       }
     }
 
-    sigma <- sstd_acc[icov,]
+    sigma <- sstd_acc[icov,nonna]
 
     # approximate the distribution of test statistics
     D <- 1000
-    tuta <- mvrnorm(D,rep(0,ncs),cov_alpha)
+    tuta <- mvrnorm(D,rep(0,ncs.test),cov_alpha)
     U_tuta <- tuta%*%diag(1/sigma)
     U1_tuta <- apply(U_tuta,1,FUN = min)
     U2_tuta <- rowSums(U_tuta^2)
@@ -396,16 +418,16 @@ markPH.aipw <- function(cmprskPHformula,
     # H0: VE(0) <= VE(1)
     # HB1 \alpha_1 <=...<= \alpha_J
     # w1=wJ+1=0, wj=1 for j=2,...,J-1
-    w <- c(0,rep(1, ncs-1),0)
-    omega <- matrix(0, ncs, ncs-1)
-    for (ics in 2:ncs){
+    w <- c(0,rep(1, ncs.test-1),0)
+    omega <- matrix(0, ncs.test, ncs.test-1)
+    for (ics in 2:ncs.test){
       omega[ics-1,ics-1] <- -w[ics]
       omega[ics,ics-1] <- w[ics]
     }
     diffsigma <- sqrt(diag(t(omega)%*%cov_alpha%*%omega))
 
     T1 <- min(alpha%*%omega/diffsigma)
-    if (ncs>2){
+    if (ncs.test>2){
       T_tuta <- tuta%*%omega%*%diag(1/diffsigma)
     } else {
       T_tuta <- tuta%*%omega/diffsigma
@@ -427,15 +449,16 @@ markPH.aipw <- function(cmprskPHformula,
     # VD=(1 – VE(j)) / (1 – VE(j-1))
     sVD_acc <- as.vector(exp(alpha%*%omega))
     sVDstd_acc <- as.vector(diffsigma*exp(alpha%*%omega))
-  }
 
-  res <- list(causes=levels(cause.fa),
-              coef.cc=sbeta_c,
-              se.cc=sstd_c,
-              coef.ipw=sbeta_ic,
-              se.ipw=sstd_ic,
-              coef=sbeta_acc,
-              se=sstd_acc,
+
+  res <- list(causes=causes[nonna],
+              causes.na=causes.na,
+              coef.cc=sbeta_c[,nonna,drop=F],
+              se.cc=sstd_c[,nonna,drop=F],
+              coef.ipw=sbeta_ic[,nonna,drop=F],
+              se.ipw=sstd_ic[,nonna,drop=F],
+              coef=sbeta_acc[,nonna,drop=F],
+              se=sstd_acc[,nonna,drop=F],
               coef.VE=sVE_acc,
               se.VE=sVEstd_acc,
               coef.VD=sVD_acc,
@@ -453,7 +476,7 @@ markPH.aipw <- function(cmprskPHformula,
               pval.B1=pval.B1,
               pval.B2=pval.B2,
               tgrid=tgrid,
-              lambda0=slamtA0_c,
+              lambda0=slamtA0_c[,,nonna,drop=F],
               covariates=colnames(covar2),
               trtpos=trtpos,
               VEnull=VEnull,
@@ -469,6 +492,10 @@ print.markPH.aipw <- function(x, digits=4,...){
 
   ncs <- ncol(x$coef)
   ncov <- nrow(x$coef)
+
+  cat("\n*********************************************************************\n")
+  cat("Causes {", x$causes.na, "} with NA estimates are ignored in the results\n")
+  cat("*********************************************************************\n\n")
 
   cat("Table 1: estimates of covaraite coefficients\n")
   for (ics in 1:ncs){
