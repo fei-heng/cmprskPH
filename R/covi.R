@@ -1,4 +1,4 @@
-covi <- function(time,covar,cause,betaall,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi){
+covi <- function(time,covar,cause,betaall,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi,causelevels){
 
   nsamp <- nrow(covar)
   ncov <- ncol(covar)
@@ -13,7 +13,7 @@ covi <- function(time,covar,cause,betaall,wipw,strata.num,maxit,nstrt,dr,Ipsi,Sp
   for (ics in 1:ncs){
     pos <- ncov*(ics-1)
 
-    deltacs <- cause == ics
+    deltacs <- cause == causelevels[ics]
     deltacs[is.na(cause)] <- F
     beta <- betaall[,ics]
 

@@ -368,7 +368,7 @@ markPH.aipw <- function(cmprskPHformula,
   ncs.test <- sum(nonna)
     alphanull <- rep(log(1-VEnull),ncs.test)
 
-    cov_acc <- cova(time.test,covar2.test,cause.test,sbeta_acc.test,wipw.test,rhohat.test,delta.test,strata.num.test,maxit)
+    cov_acc <- cova(time.test,covar2.test,cause.test,sbeta_acc.test,wipw.test,rhohat.test,delta.test,strata.num.test,maxit,causes[nonna])
 
     alpha <- sbeta_acc[icov,nonna]
     cov_alpha <- matrix(NA, ncs.test, ncs.test)

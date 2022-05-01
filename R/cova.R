@@ -1,5 +1,4 @@
-cova <- function(time,covar,cause,betaall,wipw,rhohatall,delta,strata.num,maxit){
-
+cova <- function(time,covar,cause,betaall,wipw,rhohatall,delta,strata.num,maxit,causelevels){
   nsamp <- nrow(covar)
   ncov <- ncol(covar)
   ncs <- length(unique(cause[!is.na(cause)]))
@@ -13,7 +12,7 @@ cova <- function(time,covar,cause,betaall,wipw,rhohatall,delta,strata.num,maxit)
   for (ics in 1:ncs){
     pos <- ncov*(ics-1)
 
-    deltacs <- cause == ics
+    deltacs <- cause == causelevels[ics]
     deltacs[is.na(cause)] <- F
     rhohat <- rhohatall[,ics]
     beta <- betaall[,ics]

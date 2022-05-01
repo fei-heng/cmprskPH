@@ -337,7 +337,7 @@ markPH.ipw2 <- function(cmprskPHformula,
     alpha <- sbeta_ic[icov,]
     alpha.aprch2 <- alpha[missmodel]
 
-    cov_ic <- covi(time,covar2,cause,sbeta_ic,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi)
+    cov_ic <- covi(time,covar2,cause,sbeta_ic,wipw,strata.num,maxit,nstrt,dr,Ipsi,Spsi,causelevels)
 
     cov_alpha <- matrix(0, ncs, ncs)
     for (ics in 1:ncs){

@@ -63,6 +63,7 @@
 #' default is 15.
 #' @param ipw Whether to conduct the IPW estimation. The default value is TRUE.
 #' @param cc Whether to conduct the complete-case estimation. The default value is TRUE.
+#' @param lambda0 Whether to estimate the cumulative baseline hazard. The default value is TRUE.
 #'
 #' @return returns an object of type 'markPH.aipw2'. With the following arguments:
 #' \item{causes}{types of causes}
@@ -166,17 +167,18 @@
 
 
 markPH.aipw2 <- function(cmprskPHformula,
-                        trtpos=1,
-                        strata,
-                        causelevels=NULL,
-                        missmodel=T,
-                        missformula,
-                        markformula,
-                        data=parent.frame(),
-                        VEnull=0.3,
-                        maxit=15,
-                        ipw=T,
-                        cc=T){
+                         trtpos=1,
+                         strata,
+                         causelevels=NULL,
+                         missmodel=T,
+                         missformula,
+                         markformula,
+                         data=parent.frame(),
+                         VEnull=0.3,
+                         maxit=15,
+                         ipw=T,
+                         cc=T,
+                         lambda0=T){
   # next version:
   # ...
 
@@ -272,6 +274,7 @@ markPH.aipw2 <- function(cmprskPHformula,
   covar.mark <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
 
   rhohat <- matrix(0,nsamp,ncs)
+  colnames(rhohat) <- causelevels
   if (ncs==3){
     for (jj in 1:nstrt){
 
@@ -299,7 +302,8 @@ markPH.aipw2 <- function(cmprskPHformula,
       # test for ncs>2!!!
       newdata <- as.data.frame(covar.mark[temp2,])
       colnames(newdata) <- colnames(a)[-1]
-      rhohat[temp2,-seq(1,ncs)[!missmodel]] <- predict(mark.res, newdata, type="probs")
+      #rhohat[temp2,-seq(1,ncs)[!missmodel]] <- predict(mark.res, newdata, type="probs")
+      rhohat[temp2, mark.res$lev] <- predict(mark.res, newdata, type="probs")
     }
   }
 
@@ -361,187 +365,212 @@ markPH.aipw2 <- function(cmprskPHformula,
   # sLamtA0_c <- array(0, c(ngrid,nstrt,ncs))
   slamtA0_c <- array(0, c(ngrid,nstrt,ncs))
   # slamtA0_c_bd <- array(0, c(ngrid,nstrt,ncs)) boundary correction
-  for (ics in 1:ncs){
-    deltacs <- cause == ics# be carefule: NaN ->F
-    deltacs[is.na(cause)] <- F
-
-
-    ebz <- exp(covar2%*%sbeta_acc[,ics])
-
-    Sf_acc <- rep(0, nsamp)
-    for (i in 1:nsamp){
-      if (delta[i]){
-        Sf_acc[i] <- sum(ebz*(time >= time[i])*(strata.num==strata.num[i]))
-      }
-    }
-
-    for (jj in 1:nstrt){
-      for (it in 1:ngrid){
-        tvalue <- tgrid[it]
-        wt <- (wipw*deltacs+(1-wipw)*rhohat[,ics])*delta
-
-        # temp=which((wt!=0)&(Sf_acc!=0)&(time<tvalue)&(strata.num==jj))
-        # sLamtA0_c[it,jj,ics]  <- sum(wt[temp]/Sf_acc[temp])
-
-        temp=which((wt!=0)&(Sf_acc!=0)&(strata.num==jj))
-        slamtA0_c[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])
-
-        # ttstep <- 0.001
-        # ttgrid <- seq(time0,tau,by=ttstep)
-        # slamtA0_c_bd[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])/sum(epanker(tvalue, ttgrid, b)*ttstep)
-
-
-      }
-    }
-  }
-
-
-  icov <- trtpos# test the treatment effect (trtpos)
-  if (sum(is.na(sbeta_acc[icov,])) == 0){
-    ## hypothesis testing
-
-    alphanull <- rep(log(1-VEnull),ncs)
-    alphanull.aprch2 <- alphanull[missmodel]
-
-
-    alpha <- sbeta_acc[icov,]
-    alpha.aprch2 <- alpha[missmodel]
-
-    cov_acc <- cova(time,covar2,cause,sbeta_acc,wipw,rhohat,delta,strata.num,maxit)
-
-    cov_alpha <- matrix(0, ncs, ncs)
+  if (lambda0==T){
     for (ics in 1:ncs){
-      for (jcs in 1:ncs){
-        cov_alpha[ics,jcs] <- cov_acc[(ics-1)*ncov+icov,(jcs-1)*ncov+icov]
+      deltacs <- cause == ics# be carefule: NaN ->F
+      deltacs[is.na(cause)] <- F
+
+
+      ebz <- exp(covar2%*%sbeta_acc[,ics])
+
+      Sf_acc <- rep(0, nsamp)
+      for (i in 1:nsamp){
+        if (delta[i]){
+          Sf_acc[i] <- sum(ebz*(time >= time[i])*(strata.num==strata.num[i]))
+        }
+      }
+
+      for (jj in 1:nstrt){
+        for (it in 1:ngrid){
+          tvalue <- tgrid[it]
+          wt <- (wipw*deltacs+(1-wipw)*rhohat[,ics])*delta
+
+          # temp=which((wt!=0)&(Sf_acc!=0)&(time<tvalue)&(strata.num==jj))
+          # sLamtA0_c[it,jj,ics]  <- sum(wt[temp]/Sf_acc[temp])
+
+          temp=which((wt!=0)&(Sf_acc!=0)&(strata.num==jj))
+          slamtA0_c[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])
+
+          # ttstep <- 0.001
+          # ttgrid <- seq(time0,tau,by=ttstep)
+          # slamtA0_c_bd[it,jj,ics] <- sum(epanker(tvalue, time[temp], b)*wt[temp]/Sf_acc[temp])/sum(epanker(tvalue, ttgrid, b)*ttstep)
+
+
+        }
       }
     }
-    cov_alpha.aprch2 <- cov_alpha[missmodel,missmodel]
-
-    sigma <- sstd_acc[icov,]
-    sigma.aprch2 <- sigma[missmodel]
-
-    # approximate the distribution of test statistics
-    D <- 1000
-    tuta <- mvrnorm(D,rep(0,ncs),cov_alpha)
-    tuta.aprch2 <- tuta[,missmodel]
-
-    U_tuta <- tuta%*%diag(1/sigma)
-    U_tuta.aprch2 <- tuta.aprch2%*%diag(1/sigma.aprch2)
-
-    U1_tuta <- apply(U_tuta,1,FUN = min)
-    U1_tuta.aprch2 <- apply(U_tuta.aprch2,1,FUN = min)
-    U2_tuta <- rowSums(U_tuta^2)
-    U2_tuta.aprch2 <- rowSums(U_tuta.aprch2^2)
-
-    # H0: VE(j) <= VEnull
-    # HA1 \alpha_j <= c0
-    U1 <- min((alpha-alphanull)/sigma)
-    pval.A1 <- mean(U1_tuta<U1)
-    U1.aprch2 <- min((alpha.aprch2-alphanull.aprch2)/sigma.aprch2)
-    pval.A1.aprch2 <- mean(U1_tuta.aprch2<U1.aprch2)
-
-
-    # H0: VE(j) = VEnull
-    # HA2 \alpha_j \ne c0
-    U2 <- sum(((alpha-alphanull)/sigma)^2)
-    pval.A2 <- mean(U2_tuta>U2)
-    U2.aprch2 <- sum(((alpha.aprch2-alphanull.aprch2)/sigma.aprch2)^2)
-    pval.A2.aprch2 <- mean(U2_tuta.aprch2>U2.aprch2)
-
-
-    # H0: VE(0) <= VEnull
-    # H0: VE(1) <= VEnull
-    # HA1 HA2 for each cause j
-    # HA1 \alpha_j <= c0
-    U1j <- (alpha-alphanull)/sigma
-    pval.A1j <- colMeans(U_tuta<matrix(rep(U1j,D),nrow=D,byrow=T))
-
-
-    # H0: VE(0) = VEnull
-    # H0: VE(1) = VEnull
-    # HA2 \alpha_j \ne c0
-    U2j <- ((alpha-alphanull)/sigma)^2
-    pval.A2j <- colMeans(U_tuta^2>matrix(rep(U2j,D),nrow=D,byrow=T))
-
-
-
-    # H0: VE(0) <= VE(1)
-    # HB1 \alpha_1 <=...<= \alpha_J
-    # w1=wJ+1=0, wj=1 for j=2,...,J-1
-    w <- c(0,rep(1, ncs-1),0)
-    omega <- matrix(0, ncs, ncs-1)
-    for (ics in 2:ncs){
-      omega[ics-1,ics-1] <- -w[ics]
-      omega[ics,ics-1] <- w[ics]
-    }
-    diffsigma <- sqrt(diag(t(omega)%*%cov_alpha%*%omega))
-
-
-    T1 <- min(alpha%*%omega/diffsigma)
-    if (ncs>2){
-      T_tuta <- tuta%*%omega%*%diag(1/diffsigma)
-    } else {
-      T_tuta <- tuta%*%omega/diffsigma
-    }
-
-    T1_tuta <- apply(T_tuta,1,FUN = min)
-    pval.B1 <- mean(T1_tuta>T1)
-
-
-    # H0: VE(0) = VE(1)
-    # HB2 \alpha_i \ne \alpha_j, i<j
-    T2 <- sum((alpha%*%omega/diffsigma)^2)
-    T2_tuta <- rowSums(T_tuta^2)
-    pval.B2 <- mean(T2_tuta>T2)
-
-    ## Point estimate and 95# CI for VE
-    sVE_acc <- 1-exp(alpha)
-    sVEstd_acc <- sigma*exp(alpha)
-    # VD=(1-VE(j)) / (1-VE(j-1))
-    sVD_acc <- as.vector(exp(alpha%*%omega))
-    sVDstd_acc <- as.vector(diffsigma*exp(alpha%*%omega))
-
-
-    # aprch2 for HB
-    ncs.aprch2 <- sum(missmodel)
-    # H0: VE(0) <= VE(1)
-    # HB1 \alpha_1 <=...<= \alpha_J
-    # w1=wJ+1=0, wj=1 for j=2,...,J-1
-    w <- c(0,rep(1, ncs.aprch2-1),0)
-    omega <- matrix(0, ncs.aprch2, ncs.aprch2-1)
-    for (ics in 2:ncs.aprch2){
-      omega[ics-1,ics-1] <- -w[ics]
-      omega[ics,ics-1] <- w[ics]
-    }
-    diffsigma.aprch2 <- sqrt(diag(t(omega)%*%cov_alpha.aprch2%*%omega))
-
-
-    T1.aprch2 <- min(alpha.aprch2%*%omega/diffsigma.aprch2)
-    if (ncs.aprch2>2){
-      T_tuta.aprch2 <- tuta.aprch2%*%omega%*%diag(1/diffsigma.aprch2)
-    } else {
-      T_tuta.aprch2 <- tuta.aprch2%*%omega/diffsigma.aprch2
-    }
-
-    T1_tuta.aprch2 <- apply(T_tuta.aprch2,1,FUN = min)
-    pval.B1.aprch2 <- mean(T1_tuta.aprch2>T1.aprch2)
-
-
-    # H0: VE(0) = VE(1)
-    # HB2 \alpha_i \ne \alpha_j, i<j
-    T2.aprch2 <- sum((alpha.aprch2%*%omega/diffsigma.aprch2)^2)
-    T2_tuta.aprch2 <- rowSums(T_tuta.aprch2^2)
-    pval.B2.aprch2 <- mean(T2_tuta.aprch2>T2.aprch2)
   }
 
-  res <- list(causes=causelevels,
+  ## hypothesis tests for causes with non-NA estimates
+  icov <- trtpos# test the treatment effect (trtpos)
+  U1 <- U2 <- T1 <- T2 <- pval.A1 <- pval.A2 <- pval.B1 <- pval.B2 <- NA
+  U1 <- U2 <- T1 <- T2 <- pval.A1 <- pval.A2 <- pval.B1 <- pval.B2 <- NA
+  U1j <- U2j <- pval.A1j <- pval.A2j <- rep(NA, ncs)
+  diffsigma <- rep(NA, ncs)
+
+  causes <- causelevels
+  nonna <- !is.na(sbeta_acc[icov,])
+  causes.na <- causes[!nonna]
+
+  id.test <- !(cause%in%causes.na)
+  time.test <- time[id.test]
+  covar2.test <- covar2[id.test,,drop=F]
+  cause.test <- cause[id.test]
+  sbeta_acc.test <- sbeta_acc[,nonna,drop=F]
+  wipw.test <- wipw[id.test]
+  rhohat.test <- rhohat[id.test,nonna]
+  delta.test <- delta[id.test]
+  strata.num.test <- strata.num[id.test]
+
+
+  ncs.test <- sum(nonna)
+  alphanull <- rep(log(1-VEnull),ncs.test)
+
+  missmodel.test <- missmodel[nonna]
+  alphanull.aprch2 <- alphanull[missmodel.test]
+
+
+  alpha <- sbeta_acc[icov,nonna]
+  alpha.aprch2 <- alpha[missmodel.test]
+
+  ##
+  cov_acc <- cova(time.test,covar2.test,cause.test,sbeta_acc.test,wipw.test,rhohat.test,delta.test,strata.num.test,maxit,causes[nonna])
+
+
+  cov_alpha <- matrix(0, ncs.test, ncs.test)
+  for (ics in 1:ncs.test){
+    for (jcs in 1:ncs.test){
+      cov_alpha[ics,jcs] <- cov_acc[(ics-1)*ncov+icov,(jcs-1)*ncov+icov]
+    }
+  }
+  cov_alpha.aprch2 <- cov_alpha[missmodel.test,missmodel.test]
+
+  sigma <- sstd_acc[icov,nonna]
+  sigma.aprch2 <- sigma[missmodel.test]
+
+  # approximate the distribution of test statistics
+  D <- 1000
+  tuta <- mvrnorm(D,rep(0,ncs.test),cov_alpha)
+  tuta.aprch2 <- tuta[,missmodel.test]
+
+  U_tuta <- tuta%*%diag(1/sigma)
+  U_tuta.aprch2 <- tuta.aprch2%*%diag(1/sigma.aprch2)
+
+  U1_tuta <- apply(U_tuta,1,FUN = min)
+  U1_tuta.aprch2 <- apply(U_tuta.aprch2,1,FUN = min)
+  U2_tuta <- rowSums(U_tuta^2)
+  U2_tuta.aprch2 <- rowSums(U_tuta.aprch2^2)
+
+  # H0: VE(j) <= VEnull
+  # HA1 \alpha_j <= c0
+  U1 <- min((alpha-alphanull)/sigma)
+  pval.A1 <- mean(U1_tuta<U1)
+  U1.aprch2 <- min((alpha.aprch2-alphanull.aprch2)/sigma.aprch2)
+  pval.A1.aprch2 <- mean(U1_tuta.aprch2<U1.aprch2)
+
+
+  # H0: VE(j) = VEnull
+  # HA2 \alpha_j \ne c0
+  U2 <- sum(((alpha-alphanull)/sigma)^2)
+  pval.A2 <- mean(U2_tuta>U2)
+  U2.aprch2 <- sum(((alpha.aprch2-alphanull.aprch2)/sigma.aprch2)^2)
+  pval.A2.aprch2 <- mean(U2_tuta.aprch2>U2.aprch2)
+
+
+  # H0: VE(0) <= VEnull
+  # H0: VE(1) <= VEnull
+  # HA1 HA2 for each cause j
+  # HA1 \alpha_j <= c0
+  U1j <- (alpha-alphanull)/sigma
+  pval.A1j <- colMeans(U_tuta<matrix(rep(U1j,D),nrow=D,byrow=T))
+
+
+  # H0: VE(0) = VEnull
+  # H0: VE(1) = VEnull
+  # HA2 \alpha_j \ne c0
+  U2j <- ((alpha-alphanull)/sigma)^2
+  pval.A2j <- colMeans(U_tuta^2>matrix(rep(U2j,D),nrow=D,byrow=T))
+
+
+
+  # H0: VE(0) <= VE(1)
+  # HB1 \alpha_1 <=...<= \alpha_J
+  # w1=wJ+1=0, wj=1 for j=2,...,J-1
+  w <- c(0,rep(1, ncs.test-1),0)
+  omega <- matrix(0, ncs.test, ncs.test-1)
+  for (ics in 2:ncs.test){
+    omega[ics-1,ics-1] <- -w[ics]
+    omega[ics,ics-1] <- w[ics]
+  }
+  diffsigma <- sqrt(diag(t(omega)%*%cov_alpha%*%omega))
+
+
+  T1 <- min(alpha%*%omega/diffsigma)
+  if (ncs.test>2){
+    T_tuta <- tuta%*%omega%*%diag(1/diffsigma)
+  } else {
+    T_tuta <- tuta%*%omega/diffsigma
+  }
+
+  T1_tuta <- apply(T_tuta,1,FUN = min)
+  pval.B1 <- mean(T1_tuta>T1)
+
+
+  # H0: VE(0) = VE(1)
+  # HB2 \alpha_i \ne \alpha_j, i<j
+  T2 <- sum((alpha%*%omega/diffsigma)^2)
+  T2_tuta <- rowSums(T_tuta^2)
+  pval.B2 <- mean(T2_tuta>T2)
+
+  ## Point estimate and 95# CI for VE
+  sVE_acc <- 1-exp(alpha)
+  sVEstd_acc <- sigma*exp(alpha)
+  # VD=(1-VE(j)) / (1-VE(j-1))
+  sVD_acc <- as.vector(exp(alpha%*%omega))
+  sVDstd_acc <- as.vector(diffsigma*exp(alpha%*%omega))
+
+
+  # aprch2 for HB
+  ncs.aprch2 <- sum(missmodel.test)
+  # H0: VE(0) <= VE(1)
+  # HB1 \alpha_1 <=...<= \alpha_J
+  # w1=wJ+1=0, wj=1 for j=2,...,J-1
+  w <- c(0,rep(1, ncs.aprch2-1),0)
+  omega <- matrix(0, ncs.aprch2, ncs.aprch2-1)
+  for (ics in 2:ncs.aprch2){
+    omega[ics-1,ics-1] <- -w[ics]
+    omega[ics,ics-1] <- w[ics]
+  }
+  diffsigma.aprch2 <- sqrt(diag(t(omega)%*%cov_alpha.aprch2%*%omega))
+
+
+  T1.aprch2 <- min(alpha.aprch2%*%omega/diffsigma.aprch2)
+  if (ncs.aprch2>2){
+    T_tuta.aprch2 <- tuta.aprch2%*%omega%*%diag(1/diffsigma.aprch2)
+  } else {
+    T_tuta.aprch2 <- tuta.aprch2%*%omega/diffsigma.aprch2
+  }
+
+  T1_tuta.aprch2 <- apply(T_tuta.aprch2,1,FUN = min)
+  pval.B1.aprch2 <- mean(T1_tuta.aprch2>T1.aprch2)
+
+
+  # H0: VE(0) = VE(1)
+  # HB2 \alpha_i \ne \alpha_j, i<j
+  T2.aprch2 <- sum((alpha.aprch2%*%omega/diffsigma.aprch2)^2)
+  T2_tuta.aprch2 <- rowSums(T_tuta.aprch2^2)
+  pval.B2.aprch2 <- mean(T2_tuta.aprch2>T2.aprch2)
+
+
+  res <- list(causes=causelevels[nonna],
+              causes.na=causes.na,
               misscauses=causelevels[missmodel],
-              coef.cc=sbeta_c,
-              se.cc=sstd_c,
-              coef.ipw=sbeta_ic,
-              se.ipw=sstd_ic,
-              coef=sbeta_acc,
-              se=sstd_acc,
+              coef.cc=sbeta_c[,nonna,drop=F],
+              se.cc=sstd_c[,nonna,drop=F],
+              coef.ipw=sbeta_ic[,nonna,drop=F],
+              se.ipw=sstd_ic[,nonna,drop=F],
+              coef=sbeta_acc[,nonna,drop=F],
+              se=sstd_acc[,nonna,drop=F],
               coef.VE=sVE_acc,
               se.VE=sVEstd_acc,
               coef.VD=sVD_acc,
@@ -559,7 +588,7 @@ markPH.aipw2 <- function(cmprskPHformula,
               pval.B1=pval.B1.aprch2,
               pval.B2=pval.B2.aprch2,
               tgrid=tgrid,
-              lambda0=slamtA0_c,
+              lambda0=slamtA0_c[,,nonna,drop=F],
               covariates=colnames(covar2),
               trtpos=trtpos,
               VEnull=VEnull,
@@ -575,6 +604,10 @@ print.markPH.aipw2 <- function(x, digits=4,...){
 
   ncs <- ncol(x$coef)
   ncov <- nrow(x$coef)
+
+  cat("\n*********************************************************************\n")
+  cat("Causes {", x$causes.na, "} with NA estimates are ignored in the results\n")
+  cat("*********************************************************************\n\n")
 
   cat("Table 1: estimates of covaraite coefficients\n")
   for (ics in 1:ncs){
@@ -641,13 +674,13 @@ print.markPH.aipw2 <- function(x, digits=4,...){
   cat("\n")
 
   cat("Table 4: results for hypothesis tests\n")
-  cat("HA1: VE(j)>=", x$VEnull, " with strict inequality for some j in (",paste(x$misscauses,collapse = ","),")\n",sep="")
+  cat("HA1: VE(j)>=", x$VEnull, " with strict inequality for some j in (",paste(x$misscauses[!(x$misscauses%in%x$causes.na)],collapse = ","),")\n",sep="")
   cat("U1=",x$U1,"p-value=", x$pval.A1, "\n")
-  cat("HA2: VE(j) not equal to ", x$VEnull, " for some j in (",paste(x$misscauses,collapse = ","),")\n",sep="")
+  cat("HA2: VE(j) not equal to ", x$VEnull, " for some j in (",paste(x$misscauses[!(x$misscauses%in%x$causes.na)],collapse = ","),")\n",sep="")
   cat("U2=",x$U2,"p-value=", x$pval.A2, "\n")
-  cat("HB1: VE(",head(x$misscauses,1),")>=...>=VE(",tail(x$misscauses,1),") with at least one strict inequality\n",sep="")
+  cat("HB1: VE(",head(x$misscauses[!(x$misscauses%in%x$causes.na)],1),")>=...>=VE(",tail(x$misscauses[!(x$misscauses%in%x$causes.na)],1),") with at least one strict inequality\n",sep="")
   cat("T1=",x$T1,"p-value=", x$pval.B1, "\n")
-  cat("HB2: VE(i) not equal to VE(j) for at least one pair of i and j in (",paste(x$misscauses,collapse = ","),")\n",sep="")
+  cat("HB2: VE(i) not equal to VE(j) for at least one pair of i and j in (",paste(x$misscauses[!(x$misscauses%in%x$causes.na)],collapse = ","),")\n",sep="")
   cat("T2=",x$T2,"p-value=", x$pval.B2, "\n")
   cat("\n")
 }
