@@ -9,11 +9,15 @@ markPH.aipw(
   cmprskPHformula,
   trtpos = 1,
   strata,
+  causelevels = NULL,
   missformula,
   markformula,
   data = parent.frame(),
   VEnull = 0.3,
-  maxit = 15
+  maxit = 15,
+  ipw = T,
+  cc = T,
+  lambda0 = T
 )
 }
 \arguments{
@@ -29,6 +33,8 @@ If cause is missing, cause=NA.}
 the formula object cmprskPHformula. The default value is 1.}
 
 \item{strata}{the column name of the strata variable in the data.}
+
+\item{causelevels}{types of causes.}
 
 \item{missformula}{a formula object started with a '~' operator, and the independent
 terms on the right of '~' are variables used for predicting the probability
@@ -46,6 +52,12 @@ is 0.3.}
 
 \item{maxit}{Maximum number of iterations to attempt for convergence. The
 default is 15.}
+
+\item{ipw}{Whether to conduct the IPW estimation. The default value is TRUE.}
+
+\item{cc}{Whether to conduct the complete-case estimation. The default value is TRUE.}
+
+\item{lambda0}{Whether to estimate the cumulative baseline hazard. The default value is TRUE.}
 }
 \value{
 returns an object of type 'markPH.aipw'. With the following arguments:
@@ -118,6 +130,7 @@ data(sim2cs)
 res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                         trtpos=1,
                         strata="strata",
+                        causelevels=c(1,2),
                         missformula=~z1+A,
                         markformula=~time+z1+A,
                         data=sim2cs,
@@ -131,6 +144,7 @@ data(sim3cs)
 res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
                         trtpos=1,
                         strata="strata",
+                        causelevels=c(1,2,3),
                         missformula=~z1+A,
                         markformula=~time+z1+A,
                         data=sim3cs,

@@ -16,7 +16,10 @@ markPH.aipw2(
   markformula,
   data = parent.frame(),
   VEnull = 0.3,
-  maxit = 15
+  maxit = 15,
+  ipw = T,
+  cc = T,
+  lambda0 = T
 )
 }
 \arguments{
@@ -63,6 +66,12 @@ is 0.3.}
 
 \item{maxit}{Maximum number of iterations to attempt for convergence. The
 default is 15.}
+
+\item{ipw}{Whether to conduct the IPW estimation. The default value is TRUE.}
+
+\item{cc}{Whether to conduct the complete-case estimation. The default value is TRUE.}
+
+\item{lambda0}{Whether to estimate the cumulative baseline hazard. The default value is TRUE.}
 }
 \value{
 returns an object of type 'markPH.aipw2'. With the following arguments:
