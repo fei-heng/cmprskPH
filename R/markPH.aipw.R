@@ -20,6 +20,7 @@
 #' @param trtpos the position of the treatment group indicator in the RHS of
 #' the formula object cmprskPHformula. The default value is 1.
 #' @param strata the column name of the strata variable in the data.
+#' @param causelevels types of causes.
 #' @param missformula a formula object started with a '~' operator, and the independent
 #' terms on the right of '~' are variables used for predicting the probability
 #' of being not missing under a logistic regression model.

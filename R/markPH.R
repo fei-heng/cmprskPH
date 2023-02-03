@@ -215,7 +215,7 @@ markPH <- function(cmprskPHformula,
 
     cov_c <- covf(time,covar2,cause,sbeta_c,
                   # wipw,rhohat, # delete
-                  delta,strata.num,maxit)
+                  delta,strata.num,maxit,1:ncs)
 
     alpha <- sbeta_c[icov,]
     cov_alpha <- matrix(0, ncs, ncs)
