@@ -100,6 +100,7 @@
 #' res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 #'                         trtpos=1,
 #'                         strata="strata",
+#'                         causelevels=c(1,2),
 #'                         missformula=~z1+A,
 #'                         markformula=~time+z1+A,
 #'                         data=sim2cs,
@@ -113,6 +114,7 @@
 #' res.aipw <- markPH.aipw(cmprskPHformula=cbind(time,delta,cause)~z1+z2,
 #'                         trtpos=1,
 #'                         strata="strata",
+#'                         causelevels=c(1,2,3),
 #'                         missformula=~z1+A,
 #'                         markformula=~time+z1+A,
 #'                         data=sim3cs,
@@ -130,6 +132,7 @@
 markPH.aipw <- function(cmprskPHformula,
                         trtpos=1,
                         strata,
+                        causelevels=NULL,
                         missformula,
                         markformula,
                         data=parent.frame(),
@@ -147,7 +150,13 @@ markPH.aipw <- function(cmprskPHformula,
   a <- model.frame(cmprskPHformula, data=data, na.action = na.pass)
   time <- model.response(a)[,1]
   delta <- model.response(a)[,2] # 0: censored, 1: observed failure
-  cause.fa <- factor(model.response(a)[,3])
+  if (is.null(causelevels)){
+    cause.fa <- factor(model.response(a)[,3])
+  } else {
+    # define causes following the order of causelevels
+    cause.fa <- factor(model.response(a)[,3], labels=causelevels)
+  }
+  causelevels <- levels(cause.fa)
   cause <- as.numeric(cause.fa) # cause = 1,2,...,J
   cause[is.na(cause.fa)] <- NA
 
@@ -351,7 +360,9 @@ markPH.aipw <- function(cmprskPHformula,
   U1j <- U2j <- pval.A1j <- pval.A2j <- rep(NA, ncs)
   diffsigma <- rep(NA, ncs)
 
-  causes <- levels(cause.fa)
+
+  # causes <- levels(cause.fa)
+  causes <- 1:ncs
   nonna <- !is.na(sbeta_acc[icov,])
   causes.na <- causes[!nonna]
 

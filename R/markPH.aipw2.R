@@ -197,6 +197,7 @@ markPH.aipw2 <- function(cmprskPHformula,
   if (is.null(causelevels)){
     cause.fa <- factor(model.response(a)[,3])
   } else {
+    # define causes following the order of causelevels
     cause.fa <- factor(model.response(a)[,3], labels=causelevels)
   }
   causelevels <- levels(cause.fa)
@@ -404,11 +405,11 @@ markPH.aipw2 <- function(cmprskPHformula,
   ## hypothesis tests for causes with non-NA estimates
   icov <- trtpos# test the treatment effect (trtpos)
   U1 <- U2 <- T1 <- T2 <- pval.A1 <- pval.A2 <- pval.B1 <- pval.B2 <- NA
-  U1 <- U2 <- T1 <- T2 <- pval.A1 <- pval.A2 <- pval.B1 <- pval.B2 <- NA
   U1j <- U2j <- pval.A1j <- pval.A2j <- rep(NA, ncs)
   diffsigma <- rep(NA, ncs)
 
-  causes <- causelevels
+  # causes <- levels(cause.fa)
+  causes <- 1:ncs
   nonna <- !is.na(sbeta_acc[icov,])
   causes.na <- causes[!nonna]
 
