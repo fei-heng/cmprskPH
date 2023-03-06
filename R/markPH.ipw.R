@@ -135,6 +135,7 @@ markPH.ipw <- function(cmprskPHformula,
   cause <- as.numeric(cause.fa) # cause = 1,2,...,J
   cause[is.na(cause.fa)] <- NA
   causelevels <- levels(cause.fa)
+  data$cause <- cause
 
   covar2 <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
   #A <- data[,Aux]

@@ -132,7 +132,7 @@ markPH <- function(cmprskPHformula,
   cause.fa <- factor(model.response(a)[,3])
   cause <- as.numeric(cause.fa) # cause = 1,2,...,J
   cause[is.na(cause.fa)] <- NA
-
+  data$cause <- cause
 
   covar2 <- as.matrix(model.matrix(a, data=a, na.action = na.pass)[,-1])
   #A <- data[,Aux]
