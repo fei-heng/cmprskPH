@@ -123,7 +123,7 @@
 #'                         maxit=15)
 #' res.aipw # print the result
 #'
-#' @import MASS nnet
+#' @import MASS nnet class
 #'
 #' @export
 
@@ -234,16 +234,30 @@ markPH.aipw <- function(cmprskPHformula,
   colnames(rhohat) <- levels(cause.fa)
   if (ncs==2){
     for (jj in 1:nstrt){
-      temp <- (delta==1)&(strata.num==jj)&R
-      # multinom() from package nnet
-      # Fits multinomial log-linear models via neural networks
-      # other options: mlogit() from package mlogit
-      mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
-      # test for ncs>2!!!
-      # newdata <- as.data.frame(covar.mark[(delta==1)&(strata.num==jj),])
-      # colnames(newdata) <- colnames(a)[-1]
-      newdata <- data[(delta==1)&(strata.num==jj), ]
-      rhohat[(delta==1)&(strata.num==jj),2] <- predict(mark.res, newdata, type="probs")
+      # ## method 1
+      # # multinom() from package nnet
+      # # Fits multinomial log-linear models via neural networks
+      # # other options: mlogit() from package mlogit
+      # temp <- (delta==1)&(strata.num==jj)&R
+      # mark.res <- multinom(markformula, data=data, subset=temp, trace=F)
+      # # test for ncs>2!!!
+      # # newdata <- as.data.frame(covar.mark[(delta==1)&(strata.num==jj),])
+      # # colnames(newdata) <- colnames(a)[-1]
+      # newdata <- data[(delta==1)&(strata.num==jj), ]
+      # rhohat[(delta==1)&(strata.num==jj),2] <- predict(mark.res, newdata, type="probs")
+
+      # ## method 2
+      # library(class)
+      # # sample proportion
+      # tempdata <- data[temp,]
+      # test <- covar.mark[(delta==1)&(strata.num==jj),]
+      # train <- covar.mark[(delta==1)&(strata.num==jj)&R,]
+      mark.res <- knn(covar.mark[(delta==1)&(strata.num==jj)&R,],
+                      covar.mark[(delta==1)&(strata.num==jj),],
+                      data$cause[(delta==1)&(strata.num==jj)&R],
+                      k=5,
+                      prob=T)
+      rhohat[(delta==1)&(strata.num==jj),2] <- attributes(mark.res)$prob
     }
     rhohat[delta==1,1] <- 1-rhohat[delta==1,2]
   } else {

@@ -11,8 +11,9 @@ export(markPH.aipw2)
 export(markPH.ipw)
 export(markPH.ipw2)
 import(MASS)
+import(class)
 import(nnet)
 
-importFrom("stats", "formula", "glm", "model.frame", "model.matrix",
+    importFrom("stats", "formula", "glm", "model.frame", "model.matrix",
                "model.response", "na.pass", "pnorm", "predict", "qnorm")
-importFrom("utils", "head", "tail")
+    importFrom("utils", "head", "tail")
