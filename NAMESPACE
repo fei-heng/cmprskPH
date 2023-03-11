@@ -11,7 +11,7 @@ export(markPH.aipw2)
 export(markPH.ipw)
 export(markPH.ipw2)
 import(MASS)
-import(class)
+import(caret)
 import(nnet)
 
     importFrom("stats", "formula", "glm", "model.frame", "model.matrix",

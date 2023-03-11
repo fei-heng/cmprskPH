@@ -13,7 +13,7 @@ Depends:
 Imports:
     MASS,
     nnet,
-    class
+    caret
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
