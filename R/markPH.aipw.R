@@ -88,6 +88,7 @@
 #' \item{VEnull}{the assumed VE value in the null hypothesis.}
 #' \item{diffsigma}{estimates of standard deviation of \eqn{\hat\alpha_j-\hat\alpha_{j-1}}, j=2,...,J.}
 #' \item{cov.alpha}{estimated covariance matrix of \eqn{(\hat\alpha_1,\dots,\hat\alpha_J)}.}
+#' \item{pval.C}{p values for testing pairwise multiple comparisons of VE.}
 #'
 #' @author Fei Heng
 #'
@@ -480,9 +481,22 @@ markPH.aipw <- function(cmprskPHformula,
     ## Point estimate and 95# CI for VE
     sVE_acc <- 1-exp(alpha)
     sVEstd_acc <- sigma*exp(alpha)
-    # VD=(1 – VE(j)) / (1 – VE(j-1))
+    # VD=(1-VE(j)) / (1-VE(j-1))
     sVD_acc <- as.vector(exp(alpha%*%omega))
     sVDstd_acc <- as.vector(diffsigma*exp(alpha%*%omega))
+
+    ## added by Fei - 5/22/2023
+    # H0: VE(i) = VE(j)
+    # HC: VE(i) \ne VE(j)
+    pval.C <- matrix(0, nrow=ncs.test, ncol=ncs.test)
+    for (ics in 1:(ncs.test-1)){
+      for(jcs in (ics+1):ncs.test){
+        T2ij <- (alpha[ics]-alpha[jcs])^2/(cov_alpha[ics,ics]-2*cov_alpha[ics,jcs]+cov_alpha[jcs,jcs])
+        T2ij_tuta <- (tuta[,ics]-tuta[,jcs])^2/(cov_alpha[ics,ics]-2*cov_alpha[ics,jcs]+cov_alpha[jcs,jcs])
+        pval.C[ics, jcs] <- mean(T2ij_tuta>T2ij)
+      }
+    }
+
 
 
   res <- list(causes=causes[nonna],
@@ -515,7 +529,8 @@ markPH.aipw <- function(cmprskPHformula,
               trtpos=trtpos,
               VEnull=VEnull,
               diffsigma=diffsigma,
-              cov.alpha=cov_alpha)
+              cov.alpha=cov_alpha,
+              pval.C=pval.C)
   class(res) <- "markPH.aipw"
   return(res)
 }
